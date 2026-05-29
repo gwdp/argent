@@ -11,6 +11,7 @@ import type {
 } from "./types";
 import { iosImpl } from "./platforms/ios";
 import { androidImpl } from "./platforms/android";
+import { iosRemoteImpl } from "./platforms/ios-remote";
 import { vegaImpl } from "./platforms/vega";
 
 // Bundle id / package name. Head must be letter or underscore so a bundleId
@@ -44,6 +45,7 @@ type Params = z.infer<typeof zodSchema>;
 
 const capability: ToolCapability = {
   apple: { simulator: true, device: true },
+  appleRemote: { simulator: true },
   android: { emulator: true, device: true, unknown: true },
   vega: { vvd: true },
 };
@@ -60,7 +62,10 @@ Returns { restarted, bundleId }. Fails if the app is not installed.`,
   // Only iOS needs the native-devtools service for relaunch injection.
   services: (params): Record<string, ServiceRef> => {
     const device = resolveDevice(params.udid);
-    return device.platform === "ios" ? { nativeDevtools: nativeDevtoolsRef(device) } : {};
+    if (device.platform === "ios" || device.platform === "ios-remote") {
+      return { nativeDevtools: nativeDevtoolsRef(device) };
+    }
+    return {};
   },
   execute: dispatchByPlatform<
     RestartAppIosServices,
@@ -75,6 +80,7 @@ Returns { restarted, bundleId }. Fails if the app is not installed.`,
     capability,
     ios: iosImpl,
     android: androidImpl,
+    iosRemote: iosRemoteImpl,
     vega: vegaImpl,
   }),
 };

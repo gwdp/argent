@@ -12,6 +12,7 @@ import type {
 } from "./types";
 import { iosImpl } from "./platforms/ios";
 import { androidImpl } from "./platforms/android";
+import { iosRemoteImpl } from "./platforms/ios-remote";
 import { chromiumImpl, type LaunchAppChromiumServices } from "./platforms/chromium";
 import { vegaImpl } from "./platforms/vega";
 
@@ -51,6 +52,7 @@ type Params = z.infer<typeof zodSchema>;
 
 const capability: ToolCapability = {
   apple: { simulator: true, device: true },
+  appleRemote: { simulator: true },
   android: { emulator: true, device: true, unknown: true },
   chromium: { app: true },
   vega: { vvd: true },
@@ -73,7 +75,9 @@ Common Android packages: com.android.settings, com.android.chrome, com.google.an
   // Only iOS needs the native-devtools service for launch-time injection. Chromium needs its CDP session.
   services: (params): Record<string, ServiceRef> => {
     const device = resolveDevice(params.udid);
-    if (device.platform === "ios") return { nativeDevtools: nativeDevtoolsRef(device) };
+    if (device.platform === "ios" || device.platform === "ios-remote") {
+      return { nativeDevtools: nativeDevtoolsRef(device) };
+    }
     if (device.platform === "chromium") return { chromium: chromiumCdpRef(device) };
     return {};
   },
@@ -89,6 +93,7 @@ Common Android packages: com.android.settings, com.android.chrome, com.google.an
     capability,
     ios: iosImpl,
     android: androidImpl,
+    iosRemote: iosRemoteImpl,
     chromium: chromiumImpl,
     vega: vegaImpl,
   }),
