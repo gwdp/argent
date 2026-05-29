@@ -1,38 +1,9 @@
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-import { FAILURE_CODES, FailureError, subprocessFailureMetadata } from "@argent/registry";
-import { precheckNativeDevtools } from "../../../blueprints/native-devtools";
 import type { PlatformImpl } from "../../../utils/cross-platform-tool";
+import { localSimctl } from "../../../utils/simctl-backend";
 import type { RestartAppIosServices, RestartAppParams, RestartAppResult } from "../types";
-
-const execFileAsync = promisify(execFile);
+import { buildIosRestartHandler } from "./shared";
 
 export const iosImpl: PlatformImpl<RestartAppIosServices, RestartAppParams, RestartAppResult> = {
   requires: ["xcrun"],
-  handler: async (services, params) => {
-    const { udid, bundleId } = params;
-    const blocked = await precheckNativeDevtools(services.nativeDevtools, udid);
-    if (blocked) return blocked;
-    try {
-      await execFileAsync("xcrun", ["simctl", "terminate", udid, bundleId]);
-    } catch {
-      // App may not be running — ignore
-    }
-    try {
-      await execFileAsync("xcrun", ["simctl", "launch", udid, bundleId]);
-    } catch (err) {
-      throw new FailureError(
-        `Failed to restart iOS app ${bundleId} on ${udid}.`,
-        {
-          error_code: FAILURE_CODES.IOS_RESTART_LAUNCH_FAILED,
-          failure_stage: "ios_restart_app_simctl_launch",
-          failure_area: "tool_server",
-          error_kind: "subprocess",
-          ...subprocessFailureMetadata(err, "xcrun_simctl"),
-        },
-        { cause: err instanceof Error ? err : new Error(String(err)) }
-      );
-    }
-    return { restarted: true, bundleId };
-  },
+  handler: buildIosRestartHandler(localSimctl),
 };
