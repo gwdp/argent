@@ -150,6 +150,13 @@ Fails if the simulator-server / emulator backend / Chromium CDP is not reachable
       handler: (services, params, _device, options) =>
         runSimulatorServer(services.simulatorServer, params, options),
     },
+    // ios-remote captures over the same simulator-server API as local iOS; the
+    // blueprint hands back a MoQ-backed instance whose `transport.screenshot`
+    // httpScreenshot routes through, so the handler is identical to `ios`.
+    iosRemote: {
+      handler: (services, params, _device, options) =>
+        runSimulatorServer(services.simulatorServer, params, options),
+    },
     android: {
       handler: (services, params, _device, options) =>
         runSimulatorServer(services.simulatorServer, params, options),
