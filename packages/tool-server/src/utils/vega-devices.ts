@@ -1,3 +1,4 @@
+import { FAILURE_CODES, FailureError } from "@argent/registry";
 import { runVega, runVegaDevice, resolveVegaBinary } from "./vega-cli";
 import { listVvdImages } from "./vega-sdk";
 import { listRunningVvdConsolePorts } from "./vega-process";
@@ -209,5 +210,13 @@ export async function resolveRunningVvdSerial(): Promise<string> {
     if (vvd?.serial) return vvd.serial;
     await new Promise((r) => setTimeout(r, 1_000));
   }
-  throw new Error("Vega Virtual Device reported running but did not appear in `vega device list`.");
+  throw new FailureError(
+    "Vega Virtual Device reported running but did not appear in `vega device list`.",
+    {
+      error_code: FAILURE_CODES.VEGA_BOOT_TIMEOUT,
+      failure_stage: "vega_resolve_running_serial",
+      failure_area: "tool_server",
+      error_kind: "timeout",
+    }
+  );
 }
