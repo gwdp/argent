@@ -197,14 +197,8 @@ export async function copyScreenshotToClipboard(
   )) as { result?: { value?: { ok?: boolean; error?: string } } };
   const v = out.result?.value;
   if (!v?.ok) {
-    throw new FailureError(
-      `Chromium clipboard image copy failed: ${v?.error ?? "renderer rejected the write"}`,
-      {
-        error_code: FAILURE_CODES.CHROMIUM_CLIPBOARD_FAILED,
-        failure_stage: "chromium_clipboard_image",
-        failure_area: "tool_server",
-        error_kind: "unknown",
-      }
+    throw new Error(
+      `Chromium clipboard image copy failed: ${v?.error ?? "renderer rejected the write"}`
     );
   }
 }

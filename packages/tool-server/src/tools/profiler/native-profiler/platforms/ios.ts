@@ -329,7 +329,10 @@ export async function startNativeProfilerIos(
         error_code: FAILURE_CODES.NATIVE_PROFILER_NO_RUNNING_USER_APPS,
         failure_stage: "native_profiler_start_app_detect",
         failure_area: "tool_server",
-        error_kind: "validation",
+        // "no running PID for the target app" is a missing-resource runtime state,
+        // not caller-input validation — match the other two sites for this code
+        // (ios detect + android detect-app) so telemetry isn't split by kind.
+        error_kind: "not_found",
       }
     );
   }

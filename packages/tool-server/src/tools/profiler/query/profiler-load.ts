@@ -413,7 +413,10 @@ async function loadNativeSession(
         error_code: FAILURE_CODES.PROFILER_NATIVE_TRACE_MISSING,
         failure_stage: "profiler_load_native_session",
         failure_area: "tool_server",
-        error_kind: "validation",
+        // Same logical condition as the Android .pftrace guard above (a session's
+        // persisted trace file is absent on disk) — keep the kind identical so
+        // telemetry grouped by (error_code, error_kind) isn't split by platform.
+        error_kind: "not_found",
       }
     );
   }

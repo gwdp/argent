@@ -216,7 +216,10 @@ Fails if no active profiling session exists or the CDP connection was lost durin
             error_code: FAILURE_CODES.REACT_PROFILER_NO_ACTIVE_SESSION,
             failure_stage: "react_profiler_stop_inactive",
             failure_area: "tool_server",
-            error_kind: "validation",
+            // Same code as the session-lookup guard above; an inactive sampler is
+            // an internal session-state issue (no active run), not caller-input
+            // validation — keep the kind identical so one code carries one kind.
+            error_kind: "not_found",
           }
         );
       }
